@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "../file_manager/manager.h"
 
@@ -35,7 +36,6 @@ int main(int argc, char const *argv[])
     }
     
  }
-  
   printf("I'm the SEMAFORO process and my PID is: %i\n", getpid());
   printf("id:%s \n" , argv[0]);
   printf("delay:%s \n" , argv[1]);

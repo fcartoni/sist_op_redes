@@ -14,6 +14,14 @@ int semaforo_1;
 int semaforo_2;
 int semaforo_3;
 
+  void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
+{
+  printf("Caught signal %d\n", sig);
+  int color_received = siginfo->si_value.sival_int;
+  printf("Fabrica: Recibi %i\n", color_received);
+  //numbers[current_index++] = color_received;
+}
+
 int main(int argc, char const *argv[])
 {
   printf("I'm the DCCUBER process and my PID is: %i\n", getpid());
@@ -43,17 +51,10 @@ int main(int argc, char const *argv[])
   char* delay_2[] = {data_in->lines[1][3]};
   char* delay_3[] = {data_in->lines[1][4]};
   input_file_destroy(data_in);
-
-  void handle_semaforo(int sig, siginfo_t *siginfo, void *context){
-    printf("entre a handle semaforo");
-    int color_received = siginfo->si_value.sival_int;
-    printf("fabrica: Recibi %i\n", color_received);
-    //numbers[current_index++] = number_received;
-  }
   
   int fabrica = fork();
   if (fabrica == 0){
-    printf("estoy en la fabrica");
+    printf("estoy en la fabrica %i \n", getpid());
     connect_sigaction(SIGUSR1, handle_semaforo);
     //crear N repartidores cada x seg
     //conectar señal de cambio de semaforo con un handler
@@ -62,7 +63,7 @@ int main(int argc, char const *argv[])
   }
 
   waitpid(fabrica,0,0); //quizás hay que cambiar el NULL
-  
+  printf("Proceso principal ha terminado.\n");
   //logica main
   // wait fabrica
   char char_fabrica[5];
@@ -75,14 +76,12 @@ int main(int argc, char const *argv[])
     exit(0);
   }
   
-  
   int semaforo_2 = fork();
   if (semaforo_2 == 0){
     execlp("./semaforo", "2", *delay_2, char_fabrica, NULL);
     printf("No se ejecutó semaforo 2\n");
     exit(0);
   }
-  
 
   int semaforo_3 = fork(); 
   if (semaforo_3 == 0){
@@ -90,9 +89,10 @@ int main(int argc, char const *argv[])
       printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
-  
-  
-  printf("Proceso principal ha terminado.\n");
+  waitpid(semaforo_1, 0, 0);
+  waitpid(semaforo_2, 0, 0);
+  waitpid(semaforo_3, 0, 0);
   return 0;
+  
 }
 
