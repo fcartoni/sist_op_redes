@@ -13,6 +13,7 @@ int fabrica;
 int semaforo_1;
 int semaforo_2;
 int semaforo_3;
+int tope_repartidores = 0;
 
   void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
 {
@@ -21,6 +22,33 @@ int semaforo_3;
   printf("Fabrica: Recibi %i\n", color_received);
   //numbers[current_index++] = color_received;
 }
+void handle_sigalrm_repartidores(int sig){
+    char *filename = "input.txt";
+    InputFile *data_in = read_file(filename);
+    char* tiempo_entre_rep[] = {data_in->lines[1][0]};
+    int int_tiempo_entre_rep;
+    int_tiempo_entre_rep = atoi(*tiempo_entre_rep);
+
+    char* n_repartidores[] = {data_in->lines[1][1]};
+    int int_n_repartidores;
+    int_n_repartidores = atoi(*n_repartidores);
+    // Volvemos a conectar la señal
+    signal(SIGALRM, handle_sigalrm_repartidores);
+    //Crear N repartidores cada x seg
+    printf("repartidores %i\n", tope_repartidores);
+    int repartidores = fork();
+    tope_repartidores += 1;
+    // Hacemos exit para que no se haga un for con el fork()
+    if (repartidores == 0){
+      exit(0);
+    }
+    // Queremos solo los hijos de la fabrica, asi que borramos el resto creado por el loop
+    if (int_n_repartidores > tope_repartidores){
+      alarm(int_tiempo_entre_rep);
+      
+    }
+
+  }
 
 int main(int argc, char const *argv[])
 {
@@ -47,25 +75,31 @@ int main(int argc, char const *argv[])
   }
   printf("\n");
   printf("Liberando memoria...\n");
+  char* tiempo_entre_rep[] = {data_in->lines[1][0]};
+  //char* n_repartidores[] = {data_in->lines[1][1]};
   char* delay_1[] = {data_in->lines[1][2]};
   char* delay_2[] = {data_in->lines[1][3]};
   char* delay_3[] = {data_in->lines[1][4]};
-  input_file_destroy(data_in);
-  
+// Cambiamos a int el tiempo entre repartidores
+  int int_tiempo_entre_rep;
+  int_tiempo_entre_rep = atoi(*tiempo_entre_rep);
+  printf("tiempo entre rep %i \n", int_tiempo_entre_rep);
+
   int fabrica = fork();
   if (fabrica == 0){
     printf("estoy en la fabrica %i \n", getpid());
+    //Conectar señal de cambio de semaforo con un handler
     connect_sigaction(SIGUSR1, handle_semaforo);
-    //crear N repartidores cada x seg
-    //conectar señal de cambio de semaforo con un handler
-    //wait a todos sus repartidores
+    //Conectamos SIGALRM a handle_sigalrm_repartidores
+    signal(SIGALRM, handle_sigalrm_repartidores);
+    //Crear N repartidores cada x seg
+    alarm(int_tiempo_entre_rep);
+    while (!0) {
+      pause();
+    }
     exit(0);
-  }
+  } 
 
-  waitpid(fabrica,0,0); //quizás hay que cambiar el NULL
-  printf("Proceso principal ha terminado.\n");
-  //logica main
-  // wait fabrica
   char char_fabrica[5];
   sprintf(char_fabrica, "%i", fabrica);
 
@@ -89,9 +123,13 @@ int main(int argc, char const *argv[])
       printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
+  waitpid(fabrica,0,0); 
+  printf("Proceso principal ha terminado.\n");
   waitpid(semaforo_1, 0, 0);
   waitpid(semaforo_2, 0, 0);
   waitpid(semaforo_3, 0, 0);
+
+  input_file_destroy(data_in);
   return 0;
   
 }
