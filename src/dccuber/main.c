@@ -14,13 +14,32 @@ int semaforo_1;
 int semaforo_2;
 int semaforo_3;
 int tope_repartidores = 0;
+int arreglo_rep[];
+int i = 0;
 
-  void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
+void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
+{
+  printf("entre al handle del cambio de color de los repartidores\n");
+  int color_received = siginfo->si_value.sival_int;
+  printf("Repartidor: Recibi %i\n", color_received);
+}
+
+void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
 {
   printf("Caught signal %d\n", sig);
   int color_received = siginfo->si_value.sival_int;
   printf("Fabrica: Recibi %i\n", color_received);
   //numbers[current_index++] = color_received;
+  char *filename = "input.txt";
+  InputFile *data_in = read_file(filename);
+  char* n_repartidores[] = {data_in->lines[1][1]};
+  int int_n_repartidores;
+  int_n_repartidores = atoi(*n_repartidores);
+  for (int j = 0; j < int_n_repartidores; j++){
+    //printf("arreglo_rep[j]: %i \n", arreglo_rep[j]);
+    send_signal_with_int(arreglo_rep[j], color_received);
+  }
+  // hacer un for con send adentro, para cada pid de repartidor
 }
 void handle_sigalrm_repartidores(int sig){
     char *filename = "input.txt";
@@ -40,8 +59,13 @@ void handle_sigalrm_repartidores(int sig){
     tope_repartidores += 1;
     // Hacemos exit para que no se haga un for con el fork()
     if (repartidores == 0){
+      //connect_sigaction(SIGUSR1, handle_color_repartidor);
+      execlp("./repartidor", "1", NULL);
+      
       exit(0);
     }
+    arreglo_rep[i] = repartidores;
+    i += 1;
     // Queremos solo los hijos de la fabrica, asi que borramos el resto creado por el loop
     if (int_n_repartidores > tope_repartidores){
       alarm(int_tiempo_entre_rep);
@@ -49,6 +73,7 @@ void handle_sigalrm_repartidores(int sig){
     }
 
   }
+
 
 int main(int argc, char const *argv[])
 {
