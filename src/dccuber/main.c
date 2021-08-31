@@ -43,11 +43,18 @@ int main(int argc, char const *argv[])
   char* delay_2[] = {data_in->lines[1][3]};
   char* delay_3[] = {data_in->lines[1][4]};
   input_file_destroy(data_in);
+
+  void handle_semaforo(int sig, siginfo_t *siginfo, void *context){
+    printf("entre a handle semaforo");
+    int color_received = siginfo->si_value.sival_int;
+    printf("fabrica: Recibi %i\n", color_received);
+    //numbers[current_index++] = number_received;
+  }
   
   int fabrica = fork();
   if (fabrica == 0){
-    //int pid_fabrica = getpid();
-    //printf("I'm fabrica and my pid is int: %i\n", pid_fabrica);
+    printf("estoy en la fabrica");
+    connect_sigaction(SIGUSR1, handle_semaforo);
     //crear N repartidores cada x seg
     //conectar señal de cambio de semaforo con un handler
     //wait a todos sus repartidores
@@ -56,9 +63,6 @@ int main(int argc, char const *argv[])
 
   waitpid(fabrica,0,0); //quizás hay que cambiar el NULL
   
-  //char pid_fabrica_char = pid_fabrica;
-  //printf("I'm fabrica and my pid is char: %i\n", pid_fabrica_char);
-
   //logica main
   // wait fabrica
   char char_fabrica[5];
