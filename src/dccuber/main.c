@@ -16,10 +16,10 @@ int semaforo_3;
 int tope_repartidores = 0;
 int arreglo_rep[];
 int i = 0;
+int array_colores[3];
 
 void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 {
-  printf("entre al handle del cambio de color de los repartidores\n");
   int color_received = siginfo->si_value.sival_int;
   printf("Repartidor: Recibi %i\n", color_received);
 }
@@ -28,6 +28,15 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
 {
   printf("Caught signal %d\n", sig);
   int color_received = siginfo->si_value.sival_int;
+  if (color_received == 1 || color_received == -1){
+    array_colores[0] = color_received;
+  }
+  if (color_received == 2 || color_received == -2){
+    array_colores[1] = color_received;
+  }
+  if (color_received == 3 || color_received == -3){
+    array_colores[2] = color_received;
+  }
   printf("Fabrica: Recibi %i\n", color_received);
   //numbers[current_index++] = color_received;
   char *filename = "input.txt";
@@ -59,11 +68,19 @@ void handle_sigalrm_repartidores(int sig){
     tope_repartidores += 1;
     // Hacemos exit para que no se haga un for con el fork()
     if (repartidores == 0){
-      //connect_sigaction(SIGUSR1, handle_color_repartidor);
-      execlp("./repartidor", "1", NULL);
+      printf("COLOR a mandar en el excec %i, %i, %i \n",array_colores[0], array_colores[1], array_colores[2]);
+      char char_color_1[2];
+      char char_color_2[2];
+      char char_color_3[2];
+      sprintf(char_color_1, "%i", array_colores[0]);
+      sprintf(char_color_2, "%i", array_colores[1]);
+      sprintf(char_color_3, "%i", array_colores[2]);
+      printf("chares %s, %s, %s \n",char_color_1, char_color_2, char_color_3 );
+      execlp("./repartidor", char_color_1, char_color_2, char_color_3, NULL);
       
       exit(0);
     }
+
     arreglo_rep[i] = repartidores;
     i += 1;
     // Queremos solo los hijos de la fabrica, asi que borramos el resto creado por el loop
@@ -71,6 +88,8 @@ void handle_sigalrm_repartidores(int sig){
       alarm(int_tiempo_entre_rep);
       
     }
+    // Ver si funciona
+    waitpid(repartidores, 0, 0);
 
   }
 
@@ -148,11 +167,12 @@ int main(int argc, char const *argv[])
       printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
-  waitpid(fabrica,0,0); 
-  printf("Proceso principal ha terminado.\n");
   waitpid(semaforo_1, 0, 0);
   waitpid(semaforo_2, 0, 0);
   waitpid(semaforo_3, 0, 0);
+  waitpid(fabrica,0,0); 
+  printf("Proceso principal ha terminado.\n");
+  
 
   input_file_destroy(data_in);
   return 0;
