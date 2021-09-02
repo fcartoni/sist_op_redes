@@ -8,6 +8,8 @@
 int color_received;
 int posicion = 0;
 int array_colores[3];
+int cont_turnos = 0;
+int array_turnos[4];
 
 void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 {
@@ -66,32 +68,42 @@ int main(int argc, char const *argv[])
 
   // While de posiciones
   while (posicion < int_pos_final){
+
     if ((array_colores[0] != 0) & (array_colores[1] != 0) & (array_colores[2] != 0)){
+      cont_turnos += 1;
       if (posicion == (int_pos_sem_1 - 1)){
-        printf("entre al primer if");
+        printf("entre al primer if\n");
         if (array_colores[0] == 1){
           posicion += 1;
+          array_turnos[0] = cont_turnos;
         }
       }
       else if (posicion == (int_pos_sem_2 - 1)){
-        printf("entre al segundo if");
+        printf("entre al segundo if\n");
         if (array_colores[1] == 3){
           posicion += 1;
+          array_turnos[1] = cont_turnos;
         }
       }
       else if (posicion == (int_pos_sem_3 - 1)){
-        printf("entre al tercer if");
+        printf("entre al tercer if\n");
         if (array_colores[2] == 5){
           posicion += 1;
+          array_turnos[2] = cont_turnos;
         }
       }
       else {
-        printf("entre al else");
+        printf("entre al else\n");
         posicion += 1;
+      }
+      if (posicion == int_pos_final){
+        printf("llegue a la bodega!!!!!!!!!\n");
+        array_turnos[3] = cont_turnos;
       }
         //printf("Repartidor en main %i: Recibi %i, %i, %i \n", getpid(), array_colores[0], array_colores[1], array_colores[2]); 
       printf("estado actual semaforos antes de avanzar: %i, %i, %i \n", array_colores[0], array_colores[1], array_colores[2]);
       printf("posicion del repartidor %i: %i \n", getpid(), posicion);
+      printf("array turnos de %i: %i, %i, %i, %i \n",getpid(), array_turnos[0], array_turnos[1], array_turnos[2], array_turnos[3]);
       sleep(1);
     }
   }
