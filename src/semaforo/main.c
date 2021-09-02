@@ -9,8 +9,15 @@ int color_1 = 1;
 int color_2 = 3;
 int color_3 = 5;
 
+void handle_sigabrt_sem(int sig)
+{
+  printf("Abortando semaforos\n");
+  exit(0);
+}
+
 int main(int argc, char const *argv[])
 {
+  signal(SIGABRT, handle_sigabrt_sem);
   // verde -> positivo
   // rojo -> negativo
   int delay;
@@ -18,6 +25,7 @@ int main(int argc, char const *argv[])
   delay = atoi(argv[1]);
   fabrica_id = atoi(argv[2]);
   while (!0){
+    //signal(SIGABRT, handle_sigabrt_sem);
     sleep(delay);
     if (*argv[0] == '1'){
       if (color_1 == 1){

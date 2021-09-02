@@ -27,8 +27,16 @@ void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
   }
 }
 
+void handle_sigabrt_rep(int sig)
+{
+  printf("Abortando repartidores\n");
+  // Escribir archivo
+  exit(0);
+}
+
 int main(int argc, char const *argv[])
 {
+  signal(SIGABRT, handle_sigabrt_rep);
   printf("I'm the REPARTIDOR process and my PID is: %i\n", getpid());
   // sacar el while y recibir la primera vez y dps las señales
   

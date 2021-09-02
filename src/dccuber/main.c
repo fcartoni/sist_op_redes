@@ -19,6 +19,7 @@ int tope_repartidores = 0;
 int arreglo_rep[100]; //ver como hacerlo para que no sea 100 y sean bien los repartidores
 int i = 0;
 int array_colores[3];
+int array_pid_sem[3];
 
 void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 {
@@ -79,6 +80,7 @@ void handle_sigalrm_repartidores(int sig){
       sprintf(char_color_1, "%i", array_colores[0]);
 
       char char_color_2[2];
+     
       sprintf(char_color_2, "%i", array_colores[1]);
       
       char char_color_3[2];
@@ -97,12 +99,43 @@ void handle_sigalrm_repartidores(int sig){
     }
     // Ver si funciona
     waitpid(repartidores, 0, 0);
-
   }
 
+void handle_sigint(int sig)
+{
+  printf("Gracefully finishing\n");
+  printf("Semaforos %i, %i, %i, \n,", array_pid_sem[0], array_pid_sem[1], array_pid_sem[2]);
+
+  // Hacer sigabrt a fab y sem
+  kill(fabrica, SIGABRT); 
+  //kill(array_pid_sem[0], SIGABRT);
+  //kill(array_pid_sem[1], SIGABRT);
+  //kill(array_pid_sem[2], SIGABRT);
+  // Terminamos el programa con exit code 0
+  exit(0);
+}
+
+void handle_sigabrt_fabrica(int sig)
+{
+  printf("Abortando fabrica\n");
+  // Mandar sigabrt repartidores
+  for (int i = 0; i < 100; i ++){ //cambiar el 100!!!!!!!!!!!!!!!!
+    //printf("arreglo rep[i] %i \n", arreglo_rep[i]);
+    kill(arreglo_rep[i], SIGABRT);
+  }
+  exit(0);
+}
+
+//void handle_sigabrt_sem(int sig)
+//{
+ // printf("Abortando semaforos\n");
+  // Mandar sigabrt repartidores
+//  exit(0);
+//}
 
 int main(int argc, char const *argv[])
 {
+  signal(SIGINT, handle_sigint);
   printf("I'm the DCCUBER process and my PID is: %i\n", getpid());
 
   char *filename = "input.txt";
@@ -139,6 +172,8 @@ int main(int argc, char const *argv[])
   int fabrica = fork();
   if (fabrica == 0){
     printf("estoy en la fabrica %i \n", getpid());
+    //Conectamos sigabrt mandado por el proceso ppal con un handler
+    signal(SIGABRT, handle_sigabrt_fabrica);
     //Conectar señal de cambio de semaforo con un handler
     connect_sigaction(SIGUSR1, handle_semaforo);
     //Conectamos SIGALRM a handle_sigalrm_repartidores
@@ -160,6 +195,8 @@ int main(int argc, char const *argv[])
     printf("No se ejecutó semaforo 1\n");
     exit(0);
   }
+  array_pid_sem[0] = semaforo_1;
+  printf("semaforo_1 %i \n", semaforo_1);
   
   int semaforo_2 = fork();
   if (semaforo_2 == 0){
@@ -167,6 +204,7 @@ int main(int argc, char const *argv[])
     printf("No se ejecutó semaforo 2\n");
     exit(0);
   }
+  array_pid_sem[1] = semaforo_2;
 
   int semaforo_3 = fork(); 
   if (semaforo_3 == 0){
@@ -174,6 +212,8 @@ int main(int argc, char const *argv[])
       printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
+  array_pid_sem[2] = semaforo_3;
+
   waitpid(semaforo_1, 0, 0);
   waitpid(semaforo_2, 0, 0);
   waitpid(semaforo_3, 0, 0);
