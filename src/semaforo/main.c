@@ -17,6 +17,7 @@ void handle_sigabrt_sem(int sig)
 
 int main(int argc, char const *argv[])
 {
+  signal(SIGINT, SIG_IGN);
   signal(SIGABRT, handle_sigabrt_sem);
   // verde -> positivo
   // rojo -> negativo

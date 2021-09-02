@@ -10,6 +10,7 @@ int posicion = 0;
 int array_colores[3];
 int cont_turnos = 0;
 int array_turnos[4];
+int indice_rep;
 
 void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 {
@@ -30,27 +31,43 @@ void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 void handle_sigabrt_rep(int sig)
 {
   printf("Abortando repartidores\n");
+  printf("indice del rep a escribir %i\n", indice_rep);
   // Escribir archivo
-  exit(0);
+    // Abrimos un archivo en modo de lectura
+  //FILE *output = fopen("output.txt", "w");
+  //for (int i = 0; i < current_index; i++)
+  //{
+   // fprintf(output, "%i", numbers[i]);
+    // No agregamos el separador al último número
+   // if (i + 1 != current_index)
+    //  fprintf(output, ";");
+  //}
+
+  // Se cierra el archivo (si no hay leak)
+  //fclose(output);
+  //exit(0);
 }
 
 int main(int argc, char const *argv[])
 {
+  signal(SIGINT, SIG_IGN);
   signal(SIGABRT, handle_sigabrt_rep);
   printf("I'm the REPARTIDOR process and my PID is: %i\n", getpid());
-  // sacar el while y recibir la primera vez y dps las señales
+  //printf("tengo que completar %s repartidores\n", argv[3]);
   
   // Recibimos los estados por primera vez cuando se crea el repartidor
   int argv0;
   int argv1;
   int argv2;
+  int argv3;
   argv0 = atoi(argv[0]);
   argv1 = atoi(argv[1]);
   argv2 = atoi(argv[2]);
+  argv3 = atoi(argv[3]);
   array_colores[0] = argv0;
   array_colores[1] = argv1;
   array_colores[2] = argv2;
-
+  indice_rep = argv3 - 1;
   // Hacemos la conexión para que reciba los cambios de estado del semáforo
   connect_sigaction(SIGUSR1, handle_color_repartidor);
 
@@ -78,6 +95,7 @@ int main(int argc, char const *argv[])
   while (posicion < int_pos_final){
 
     if ((array_colores[0] != 0) & (array_colores[1] != 0) & (array_colores[2] != 0)){
+      //signal(SIGABRT, handle_sigabrt_rep);
       cont_turnos += 1;
       if (posicion == (int_pos_sem_1 - 1)){
         printf("entre al primer if\n");
