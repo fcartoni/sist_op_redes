@@ -9,12 +9,14 @@
 //#include "../semaforo/main.c"
 //#include "../repartidor/main.c"
 
+
+// impar verde, par rojo (1,2 sem 1 ; 3,4 sem 2; 5,6 sem 3)
 int fabrica;
 int semaforo_1;
 int semaforo_2;
 int semaforo_3;
 int tope_repartidores = 0;
-int arreglo_rep[];
+int arreglo_rep[100]; //ver como hacerlo para que no sea 100 y sean bien los repartidores
 int i = 0;
 int array_colores[3];
 
@@ -28,13 +30,13 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
 {
   printf("Caught signal %d\n", sig);
   int color_received = siginfo->si_value.sival_int;
-  if (color_received == 1 || color_received == -1){
+  if (color_received == 1 || color_received == 2){
     array_colores[0] = color_received;
   }
-  if (color_received == 2 || color_received == -2){
+  if (color_received == 3 || color_received == 4){
     array_colores[1] = color_received;
   }
-  if (color_received == 3 || color_received == -3){
+  if (color_received == 5 || color_received == 6){
     array_colores[2] = color_received;
   }
   printf("Fabrica: Recibi %i\n", color_received);
@@ -44,6 +46,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
   char* n_repartidores[] = {data_in->lines[1][1]};
   int int_n_repartidores;
   int_n_repartidores = atoi(*n_repartidores);
+  printf("ids de repartidores %i, %i, %i \n ", arreglo_rep[0], arreglo_rep[1], arreglo_rep[2]);
   for (int j = 0; j < int_n_repartidores; j++){
     //printf("arreglo_rep[j]: %i \n", arreglo_rep[j]);
     send_signal_with_int(arreglo_rep[j], color_received);
@@ -60,6 +63,8 @@ void handle_sigalrm_repartidores(int sig){
     char* n_repartidores[] = {data_in->lines[1][1]};
     int int_n_repartidores;
     int_n_repartidores = atoi(*n_repartidores);
+
+
     // Volvemos a conectar la señal
     signal(SIGALRM, handle_sigalrm_repartidores);
     //Crear N repartidores cada x seg
@@ -69,18 +74,20 @@ void handle_sigalrm_repartidores(int sig){
     // Hacemos exit para que no se haga un for con el fork()
     if (repartidores == 0){
       printf("COLOR a mandar en el excec %i, %i, %i \n",array_colores[0], array_colores[1], array_colores[2]);
-      char char_color_1[2];
-      char char_color_2[2];
-      char char_color_3[2];
-      sprintf(char_color_1, "%i", array_colores[0]);
-      sprintf(char_color_2, "%i", array_colores[1]);
-      sprintf(char_color_3, "%i", array_colores[2]);
-      printf("chares %s, %s, %s \n",char_color_1, char_color_2, char_color_3 );
-      execlp("./repartidor", char_color_1, char_color_2, char_color_3, NULL);
       
+      char char_color_1[2];
+      sprintf(char_color_1, "%i", array_colores[0]);
+
+      char char_color_2[2];
+      sprintf(char_color_2, "%i", array_colores[1]);
+      
+      char char_color_3[2];
+      sprintf(char_color_3, "%i", array_colores[2]);
+
+      execlp("./repartidor", char_color_1, char_color_2, char_color_3, NULL);
+
       exit(0);
     }
-
     arreglo_rep[i] = repartidores;
     i += 1;
     // Queremos solo los hijos de la fabrica, asi que borramos el resto creado por el loop

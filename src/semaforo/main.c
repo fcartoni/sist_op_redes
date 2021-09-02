@@ -6,8 +6,8 @@
 #include "../file_manager/manager.h"
 
 int color_1 = 1;
-int color_2 = 2;
-int color_3 = 3;
+int color_2 = 3;
+int color_3 = 5;
 
 int main(int argc, char const *argv[])
 {
@@ -20,17 +20,32 @@ int main(int argc, char const *argv[])
   while (!0){
     sleep(delay);
     if (*argv[0] == '1'){
-      color_1 = color_1 * -1;
+      if (color_1 == 1){
+        color_1 += 1;
+      }
+      else {
+        color_1 -= 1;
+      }
       printf("color:%i \n" , color_1);
       send_signal_with_int(fabrica_id, color_1);
     } 
     else if (*argv[0] == '2'){
-      color_2 = color_2 * -1;
+      if (color_2 == 3){
+        color_2 += 1;
+      }
+      else {
+        color_2 -= 1;
+      }
       printf("color:%i \n" , color_2);
       send_signal_with_int(fabrica_id, color_2);
     }
     else if (*argv[0] == '3'){
-      color_3 = color_3 * -1;
+      if (color_3 == 5){
+        color_3 += 1;
+      }
+      else {
+        color_3 -= 1;
+      }
       printf("color:%i \n" , color_3);
       send_signal_with_int(fabrica_id, color_3);
     }
