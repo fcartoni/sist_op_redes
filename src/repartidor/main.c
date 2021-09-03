@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../file_manager/manager.h"
 
@@ -32,20 +33,26 @@ void handle_sigabrt_rep(int sig)
 {
   printf("Abortando repartidores\n");
   printf("indice del rep a escribir %i\n", indice_rep);
-  // Escribir archivo
-    // Abrimos un archivo en modo de lectura
-  //FILE *output = fopen("output.txt", "w");
-  //for (int i = 0; i < current_index; i++)
-  //{
-   // fprintf(output, "%i", numbers[i]);
-    // No agregamos el separador al último número
-   // if (i + 1 != current_index)
-    //  fprintf(output, ";");
-  //}
+  char nombre_archivo[20];
+  sprintf(nombre_archivo, "repartidor_%i.txt", indice_rep);
+      
+  FILE *output = fopen(nombre_archivo, "w");
+    for (int i = 0; i < 4; i++){
+      if (array_turnos[i] == 0){
+        fprintf(output, "-1");
+      }
+      else{
+        fprintf(output, "%i", array_turnos[i]);
+      }
+      // No agregamos el separador al último número
+      if (i + 1 != 4)
+          fprintf(output, ",");
+    }
 
   // Se cierra el archivo (si no hay leak)
-  //fclose(output);
-  //exit(0);
+  fclose(output);
+ 
+  exit(0);
 }
 
 int main(int argc, char const *argv[])
@@ -53,6 +60,7 @@ int main(int argc, char const *argv[])
   signal(SIGINT, SIG_IGN);
   signal(SIGABRT, handle_sigabrt_rep);
   printf("I'm the REPARTIDOR process and my PID is: %i\n", getpid());
+  
   //printf("tengo que completar %s repartidores\n", argv[3]);
   
   // Recibimos los estados por primera vez cuando se crea el repartidor
@@ -70,7 +78,7 @@ int main(int argc, char const *argv[])
   indice_rep = argv3 - 1;
   // Hacemos la conexión para que reciba los cambios de estado del semáforo
   connect_sigaction(SIGUSR1, handle_color_repartidor);
-
+  printf("indice del rep a escribir %i\n", indice_rep);
   // Leemos la posicion_final
   char *filename = "input.txt";
   InputFile *data_in = read_file(filename);
@@ -125,6 +133,21 @@ int main(int argc, char const *argv[])
       if (posicion == int_pos_final){
         printf("llegue a la bodega!!!!!!!!!\n");
         array_turnos[3] = cont_turnos;
+        
+        char nombre_archivo[20];
+        sprintf(nombre_archivo, "repartidor_%i.txt", indice_rep);
+      
+        FILE *output = fopen(nombre_archivo, "w");
+        for (int i = 0; i < 4; i++){
+          fprintf(output, "%i", array_turnos[i]);
+          // No agregamos el separador al último número
+          if (i + 1 != 4)
+            fprintf(output, ",");
+          }
+
+          // Se cierra el archivo (si no hay leak)
+        fclose(output);
+
       }
         //printf("Repartidor en main %i: Recibi %i, %i, %i \n", getpid(), array_colores[0], array_colores[1], array_colores[2]); 
       printf("estado actual semaforos antes de avanzar: %i, %i, %i \n", array_colores[0], array_colores[1], array_colores[2]);

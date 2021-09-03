@@ -8,10 +8,22 @@
 int color_1 = 1;
 int color_2 = 3;
 int color_3 = 5;
+int cambios = 0;
+int id_sem;
+
 
 void handle_sigabrt_sem(int sig)
 {
   printf("Abortando semaforos\n");
+  printf("el semaforo %c cambio %i veces \n", id_sem, cambios);
+  //Escribir archivo
+  char nombre_archivo[20];
+  sprintf(nombre_archivo, "semaforo_%c.txt", id_sem);
+      
+  FILE *output = fopen(nombre_archivo, "w");
+    fprintf(output, "%i", cambios);
+  // Se cierra el archivo (si no hay leak)
+  fclose(output);
   exit(0);
 }
 
@@ -25,6 +37,7 @@ int main(int argc, char const *argv[])
   int fabrica_id;
   delay = atoi(argv[1]);
   fabrica_id = atoi(argv[2]);
+  id_sem = *argv[0];
   while (!0){
     //signal(SIGABRT, handle_sigabrt_sem);
     sleep(delay);
@@ -35,6 +48,7 @@ int main(int argc, char const *argv[])
       else {
         color_1 -= 1;
       }
+      cambios += 1;
       printf("color:%i \n" , color_1);
       send_signal_with_int(fabrica_id, color_1);
     } 
@@ -45,6 +59,7 @@ int main(int argc, char const *argv[])
       else {
         color_2 -= 1;
       }
+      cambios += 1;
       printf("color:%i \n" , color_2);
       send_signal_with_int(fabrica_id, color_2);
     }
@@ -55,6 +70,7 @@ int main(int argc, char const *argv[])
       else {
         color_3 -= 1;
       }
+      cambios += 1;
       printf("color:%i \n" , color_3);
       send_signal_with_int(fabrica_id, color_3);
     }

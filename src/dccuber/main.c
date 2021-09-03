@@ -24,7 +24,7 @@ int array_pid_sem[3];
 int rep_finalizados = 0;
 int procesos = 0;
 int fab_termino = 0;
-//int indice_rep = 0;
+int indice_rep = 0;
 
 void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
 {
@@ -87,6 +87,7 @@ void handle_sigalrm_repartidores(int sig){
     //printf("repartidores %i\n", tope_repartidores);
     int repartidores = fork();
     tope_repartidores += 1;
+    indice_rep += 1;
     // Hacemos exit para que no se haga un for con el fork()
     if (repartidores == 0){
       //printf("Semaforos en rep %i, %i, %i, \n,", array_pid_sem[0], array_pid_sem[1], array_pid_sem[2]);
@@ -101,8 +102,11 @@ void handle_sigalrm_repartidores(int sig){
       
       char char_color_3[2];
       sprintf(char_color_3, "%i", array_colores[2]);
-      //indice_rep += 1;
-      execlp("./repartidor", char_color_1, char_color_2, char_color_3, "1", NULL);
+
+      char char_indice_rep[2];
+      sprintf(char_indice_rep, "%i", indice_rep);
+      printf("indice rep a mandar en el exec %i\n", indice_rep);
+      execlp("./repartidor", char_color_1, char_color_2, char_color_3, char_indice_rep, NULL);
 
       exit(0);
     }
