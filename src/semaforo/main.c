@@ -14,8 +14,8 @@ int id_sem;
 
 void handle_sigabrt_sem(int sig)
 {
-  printf("Abortando semaforos\n");
-  printf("el semaforo %c cambio %i veces \n", id_sem, cambios);
+  //printf("Abortando semaforos\n");
+  //printf("el semaforo %c cambio %i veces \n", id_sem, cambios);
   //Escribir archivo
   char nombre_archivo[20];
   sprintf(nombre_archivo, "semaforo_%c.txt", id_sem);
@@ -31,6 +31,7 @@ int main(int argc, char const *argv[])
 {
   signal(SIGINT, SIG_IGN);
   signal(SIGABRT, handle_sigabrt_sem);
+  printf("I'm the SEMAFORO process and my PID is: %i\n", getpid());
   // verde -> positivo
   // rojo -> negativo
   int delay;
@@ -49,7 +50,7 @@ int main(int argc, char const *argv[])
         color_1 -= 1;
       }
       cambios += 1;
-      printf("color:%i \n" , color_1);
+      //printf("color:%i \n" , color_1);
       send_signal_with_int(fabrica_id, color_1);
     } 
     else if (*argv[0] == '2'){
@@ -60,7 +61,7 @@ int main(int argc, char const *argv[])
         color_2 -= 1;
       }
       cambios += 1;
-      printf("color:%i \n" , color_2);
+      //printf("color:%i \n" , color_2);
       send_signal_with_int(fabrica_id, color_2);
     }
     else if (*argv[0] == '3'){
@@ -71,13 +72,13 @@ int main(int argc, char const *argv[])
         color_3 -= 1;
       }
       cambios += 1;
-      printf("color:%i \n" , color_3);
+      //printf("color:%i \n" , color_3);
       send_signal_with_int(fabrica_id, color_3);
     }
     
  }
-  printf("I'm the SEMAFORO process and my PID is: %i\n", getpid());
-  printf("id:%s \n" , argv[0]);
-  printf("delay:%s \n" , argv[1]);
-  printf("parent:%s \n" , argv[2]);
+  //printf("I'm the SEMAFORO process and my PID is: %i\n", getpid());
+  //printf("id:%s \n" , argv[0]);
+  //printf("delay:%s \n" , argv[1]);
+  //printf("parent:%s \n" , argv[2]);
 }

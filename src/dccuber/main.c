@@ -25,18 +25,19 @@ int rep_finalizados = 0;
 int procesos = 0;
 int fab_termino = 0;
 int indice_rep = 0;
+char* input_name;
 
-void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
-{
-  int color_received = siginfo->si_value.sival_int;
-  printf("Repartidor: Recibi %i\n", color_received);
-}
+//void handle_color_repartidor(int sig, siginfo_t *siginfo, void *context)
+//{
+  //int color_received = siginfo->si_value.sival_int;
+  //printf("Repartidor: Recibi %i\n", color_received);
+//}
 
 void handle_abort_sem(int sig, siginfo_t *siginfo, void *context)
 {
   int senal = siginfo->si_value.sival_int;
   if (senal == 1){
-    printf("quiero abortar los semaforos \n");
+    //printf("quiero abortar los semaforos \n");
     kill(array_pid_sem[0], SIGABRT);
     kill(array_pid_sem[1], SIGABRT);
     kill(array_pid_sem[2], SIGABRT);
@@ -57,7 +58,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
   }
   //printf("Fabrica: Recibi %i\n", color_received);
   //numbers[current_index++] = color_received;
-  char *filename = "input.txt";
+  char *filename = input_name;
   InputFile *data_in = read_file(filename);
   char* n_repartidores[] = {data_in->lines[1][1]};
   int int_n_repartidores;
@@ -71,7 +72,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
   input_file_destroy(data_in); //Libero memoria del file
 }
 void handle_sigalrm_repartidores(int sig){
-    char *filename = "input.txt";
+    char *filename = input_name;
     InputFile *data_in = read_file(filename);
     char* tiempo_entre_rep[] = {data_in->lines[1][0]};
     int int_tiempo_entre_rep;
@@ -106,13 +107,13 @@ void handle_sigalrm_repartidores(int sig){
 
       char char_indice_rep[2];
       sprintf(char_indice_rep, "%i", indice_rep);
-      printf("indice rep a mandar en el exec %i\n", indice_rep);
-      execlp("./repartidor", char_color_1, char_color_2, char_color_3, char_indice_rep, NULL);
+      //printf("indice rep a mandar en el exec %i\n", indice_rep);
+      execlp("./repartidor", char_color_1, char_color_2, char_color_3, char_indice_rep, filename, NULL);
 
       exit(0);
     }
 
-    printf("pid fabrica para ver wait %i\n",getpid());
+    //printf("pid fabrica para ver wait %i\n",getpid());
     arreglo_rep[i] = repartidores;
     i += 1;
     // Queremos solo los hijos de la fabrica, asi que borramos el resto creado por el loop
@@ -128,11 +129,11 @@ void handle_sigalrm_repartidores(int sig){
 void handle_sigint_main(int sig)
 {
   printf("Gracefully finishing\n");
-  printf("Semaforos del abort %i, %i, %i, \n", array_pid_sem[0], array_pid_sem[1], array_pid_sem[2]);
+  //printf("Semaforos del abort %i, %i, %i, \n", array_pid_sem[0], array_pid_sem[1], array_pid_sem[2]);
 
   // Hacer sigabrt a fab y sem
   kill(fabrica_pid, SIGABRT); 
-  printf("fabrica %i \n", fabrica_pid);
+  //printf("fabrica %i \n", fabrica_pid);
   kill(array_pid_sem[0], SIGABRT);
   kill(array_pid_sem[1], SIGABRT);
   kill(array_pid_sem[2], SIGABRT);
@@ -142,15 +143,15 @@ void handle_sigint_main(int sig)
 
 void handle_sigabrt_fabrica(int sig)
 {
-  char *filename = "input.txt";
+  char *filename = input_name;
   InputFile *data_in = read_file(filename);
-
+  
   char* numero_reps[] = {data_in->lines[1][1]};
   int int_numero_reps;
   int_numero_reps = atoi(*numero_reps);
-  printf("Abortando fabricaaaaaaa\n");
+  //printf("Abortando fabricaaaaaaa\n");
   for (int i = 0; i < int_numero_reps; i++){ // cambiar 10 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    printf("arreglo_rep[%i] %i \n", i, arreglo_rep[i]);
+    //printf("arreglo_rep[%i] %i \n", i, arreglo_rep[i]);
     kill(arreglo_rep[i], SIGABRT);
     //waitpid(arreglo_rep[i], 0, 0);
   }
@@ -162,12 +163,15 @@ void handle_sigabrt_fabrica(int sig)
 
 int main(int argc, char const *argv[])
 {
-  
+  //printf("Program name is: %s\n", argv[0]);   
+  //printf("Argumnto 1 es: %s\n", argv[1]);
   signal(SIGINT, handle_sigint_main);
   
   printf("I'm the DCCUBER process and my PID is: %i\n", getpid());
 
-  char *filename = "input.txt";
+  input_name = argv[1];
+  //printf("Input Name: %s\n", input_name);
+  char *filename = input_name;
   InputFile *data_in = read_file(filename);
 
   printf("Leyendo el archivo %s...\n", filename);
@@ -205,7 +209,7 @@ int main(int argc, char const *argv[])
   int fabrica = fork();
   if (fabrica == 0){
     signal(SIGINT, SIG_IGN);
-    printf("estoy en la fabrica %i \n", getpid());
+    //printf("estoy en la fabrica %i \n", getpid());
     //printf("pidof %i", pidof(semaforo_1));
     //Conectamos sigabrt mandado por el proceso ppal con un handler
     signal(SIGABRT, handle_sigabrt_fabrica);
@@ -229,7 +233,7 @@ int main(int argc, char const *argv[])
     
     free(arreglo_rep); //Libero la memoria del arreglo de repartidores
     send_signal_with_int(getppid(), 1);
-    printf("terminó la fábrica %i\n", fab_termino);
+    //printf("terminó la fábrica %i\n", fab_termino);
     //while (!0) {
     //  pause();
     //}
@@ -243,7 +247,7 @@ int main(int argc, char const *argv[])
   int semaforo_1 = fork();
   if (semaforo_1 == 0){
     execlp("./semaforo", "1", *delay_1, char_fabrica, NULL);
-    printf("No se ejecutó semaforo 1\n");
+    //printf("No se ejecutó semaforo 1\n");
     exit(0);
   }
   //array_pid_sem[0] = semaforo_1;
@@ -252,7 +256,7 @@ int main(int argc, char const *argv[])
   int semaforo_2 = fork();
   if (semaforo_2 == 0){
     execlp("./semaforo", "2", *delay_2, char_fabrica, NULL);
-    printf("No se ejecutó semaforo 2\n");
+    //printf("No se ejecutó semaforo 2\n");
     exit(0);
   }
   //array_pid_sem[1] = semaforo_2;
@@ -261,14 +265,14 @@ int main(int argc, char const *argv[])
   int semaforo_3 = fork(); 
   if (semaforo_3 == 0){
       execlp("./semaforo", "3", *delay_3, char_fabrica, NULL);
-      printf("No se ejecutó semaforo 3\n");
+      //printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
   //array_pid_sem[2] = semaforo_3;
   //printf("semaforo_3 %i, %i \n", semaforo_3, array_pid_sem[2]);
 
   //printf("arreglo de semaforos despues del main: %i, %i, %i \n", array_pid_sem[0], array_pid_sem[1], array_pid_sem[2]);
-  printf("Semaforos dps del main %i, %i, %i, \n", semaforo_1, semaforo_2, semaforo_3);
+  //printf("Semaforos dps del main %i, %i, %i, \n", semaforo_1, semaforo_2, semaforo_3);
   array_pid_sem[0] = semaforo_1;
   array_pid_sem[1] = semaforo_2;
   array_pid_sem[2] = semaforo_3;
@@ -287,7 +291,7 @@ int main(int argc, char const *argv[])
       if (n_proc > 0){
         procesos += 1;
       }
-      printf("procesos terminados = %i\n", procesos);
+      //printf("procesos terminados = %i\n", procesos);
     }
 
   printf("Proceso principal ha terminado.\n");
