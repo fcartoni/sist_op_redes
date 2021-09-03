@@ -147,7 +147,7 @@ int main(int argc, char const *argv[])
 
           // Se cierra el archivo (si no hay leak)
         fclose(output);
-
+        input_file_destroy(data_in);
       }
         //printf("Repartidor en main %i: Recibi %i, %i, %i \n", getpid(), array_colores[0], array_colores[1], array_colores[2]); 
       printf("estado actual semaforos antes de avanzar: %i, %i, %i \n", array_colores[0], array_colores[1], array_colores[2]);

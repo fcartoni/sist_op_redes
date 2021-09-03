@@ -17,7 +17,7 @@ int semaforo_1;
 int semaforo_2;
 int semaforo_3;
 int tope_repartidores = 0;
-int arreglo_rep[100]; //ver como hacerlo para que no sea 100 y sean bien los repartidores
+int* arreglo_rep; //ver como hacerlo para que no sea 100 y sean bien los repartidores
 int i = 0;
 int array_colores[3];
 int array_pid_sem[3]; 
@@ -68,6 +68,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
     send_signal_with_int(arreglo_rep[j], color_received);
   }
   // hacer un for con send adentro, para cada pid de repartidor
+  input_file_destroy(data_in); //Libero memoria del file
 }
 void handle_sigalrm_repartidores(int sig){
     char *filename = "input.txt";
@@ -79,7 +80,7 @@ void handle_sigalrm_repartidores(int sig){
     char* n_repartidores[] = {data_in->lines[1][1]};
     int int_n_repartidores;
     int_n_repartidores = atoi(*n_repartidores);
-
+    input_file_destroy(data_in); //Libero memoria del file
 
     // Volvemos a conectar la señal
     signal(SIGALRM, handle_sigalrm_repartidores);
@@ -141,12 +142,20 @@ void handle_sigint_main(int sig)
 
 void handle_sigabrt_fabrica(int sig)
 {
+  char *filename = "input.txt";
+  InputFile *data_in = read_file(filename);
+
+  char* numero_reps[] = {data_in->lines[1][1]};
+  int int_numero_reps;
+  int_numero_reps = atoi(*numero_reps);
   printf("Abortando fabricaaaaaaa\n");
-  for (int i = 0; i< 3; i++){ // cambiar 10 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    printf("arreglo_rep[i] %i \n", arreglo_rep[i]);
+  for (int i = 0; i < int_numero_reps; i++){ // cambiar 10 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    printf("arreglo_rep[%i] %i \n", i, arreglo_rep[i]);
     kill(arreglo_rep[i], SIGABRT);
     //waitpid(arreglo_rep[i], 0, 0);
   }
+  free(arreglo_rep); //Libero la memoria del arreglo de repartidores
+  input_file_destroy(data_in); //Liberando memoria
   exit(0);
 }
 
@@ -190,6 +199,7 @@ int main(int argc, char const *argv[])
 
   int int_n_rep;
   int_n_rep = atoi(*n_repartidores);
+  arreglo_rep = calloc(int_n_rep, sizeof(int)); //ver si funcionaaaaaaaaaaaaaaaaaaaaaaaa
   //printf("tiempo entre rep %i \n", int_tiempo_entre_rep);
 
   int fabrica = fork();
@@ -216,6 +226,8 @@ int main(int argc, char const *argv[])
       }
     }
     //fab_termino += 1;
+    
+    free(arreglo_rep); //Libero la memoria del arreglo de repartidores
     send_signal_with_int(getppid(), 1);
     printf("terminó la fábrica %i\n", fab_termino);
     //while (!0) {
