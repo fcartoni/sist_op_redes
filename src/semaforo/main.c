@@ -50,7 +50,7 @@ int main(int argc, char const *argv[])
         color_1 -= 1;
       }
       cambios += 1;
-      //printf("color:%i \n" , color_1);
+      printf("color:%i \n" , color_1);
       send_signal_with_int(fabrica_id, color_1);
     } 
     else if (*argv[0] == '2'){
@@ -61,7 +61,7 @@ int main(int argc, char const *argv[])
         color_2 -= 1;
       }
       cambios += 1;
-      //printf("color:%i \n" , color_2);
+      printf("color:%i \n" , color_2);
       send_signal_with_int(fabrica_id, color_2);
     }
     else if (*argv[0] == '3'){
@@ -72,9 +72,11 @@ int main(int argc, char const *argv[])
         color_3 -= 1;
       }
       cambios += 1;
-      //printf("color:%i \n" , color_3);
+      printf("color:%i \n" , color_3);
       send_signal_with_int(fabrica_id, color_3);
+      
     }
+    //printf("COLORES en semaforo %i, %i, %i \n", color_1, color_2, color_3);
     
  }
   //printf("I'm the SEMAFORO process and my PID is: %i\n", getpid());

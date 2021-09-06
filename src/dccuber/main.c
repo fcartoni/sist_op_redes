@@ -17,9 +17,10 @@ int semaforo_1;
 int semaforo_2;
 int semaforo_3;
 int tope_repartidores = 0;
+//int arreglo_rep[15];
 int* arreglo_rep; //ver como hacerlo para que no sea 100 y sean bien los repartidores
 int i = 0;
-int array_colores[3];
+int array_colores[3] = {1,3,5};
 int array_pid_sem[3]; 
 int rep_finalizados = 0;
 int procesos = 0;
@@ -56,7 +57,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
   if (color_received == 5 || color_received == 6){
     array_colores[2] = color_received;
   }
-  //printf("Fabrica: Recibi %i\n", color_received);
+  printf("Fabrica: Recibi %i\n", color_received);
   //numbers[current_index++] = color_received;
   char *filename = input_name;
   InputFile *data_in = read_file(filename);
@@ -68,6 +69,7 @@ void handle_semaforo(int sig, siginfo_t *siginfo, void *context)
     //printf("arreglo_rep[j]: %i \n", arreglo_rep[j]);
     send_signal_with_int(arreglo_rep[j], color_received);
   }
+  //free(arreglo_rep);
   // hacer un for con send adentro, para cada pid de repartidor
   input_file_destroy(data_in); //Libero memoria del file
 }
@@ -122,6 +124,7 @@ void handle_sigalrm_repartidores(int sig){
       alarm(int_tiempo_entre_rep);
       
     }
+    //free(arreglo_rep);
     // Ver si funciona
     //waitpid(repartidores, 0, 0);
   }
@@ -155,13 +158,13 @@ void handle_sigabrt_fabrica(int sig)
     kill(arreglo_rep[i], SIGABRT);
     //waitpid(arreglo_rep[i], 0, 0);
   }
-  free(arreglo_rep); //Libero la memoria del arreglo de repartidores
+  //free(arreglo_rep); //Libero la memoria del arreglo de repartidores
   input_file_destroy(data_in); //Liberando memoria
   exit(0);
 }
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
   //printf("Program name is: %s\n", argv[0]);   
   //printf("Argumnto 1 es: %s\n", argv[1]);
@@ -197,6 +200,8 @@ int main(int argc, char const *argv[])
   char* delay_1[] = {data_in->lines[1][2]};
   char* delay_2[] = {data_in->lines[1][3]};
   char* delay_3[] = {data_in->lines[1][4]};
+
+  //input_file_destroy(data_in);
 // Cambiamos a int el tiempo entre repartidores
   int int_tiempo_entre_rep;
   int_tiempo_entre_rep = atoi(*tiempo_entre_rep);
@@ -231,7 +236,7 @@ int main(int argc, char const *argv[])
     }
     //fab_termino += 1;
     
-    free(arreglo_rep); //Libero la memoria del arreglo de repartidores
+    //free(arreglo_rep); //Libero la memoria del arreglo de repartidores
     send_signal_with_int(getppid(), 1);
     //printf("terminó la fábrica %i\n", fab_termino);
     //while (!0) {
@@ -241,6 +246,7 @@ int main(int argc, char const *argv[])
     exit(0);
   } 
 
+  //free(arreglo_rep);
   char char_fabrica[5];
   sprintf(char_fabrica, "%i", fabrica);
 
@@ -268,6 +274,8 @@ int main(int argc, char const *argv[])
       //printf("No se ejecutó semaforo 3\n");
       exit(0);
     }
+
+  //input_file_destroy(data_in);
   //array_pid_sem[2] = semaforo_3;
   //printf("semaforo_3 %i, %i \n", semaforo_3, array_pid_sem[2]);
 
@@ -293,11 +301,12 @@ int main(int argc, char const *argv[])
       }
       //printf("procesos terminados = %i\n", procesos);
     }
-
+  
   printf("Proceso principal ha terminado.\n");
   
 
   input_file_destroy(data_in);
+  //free(arreglo_rep);
   return 0;
   
 }
